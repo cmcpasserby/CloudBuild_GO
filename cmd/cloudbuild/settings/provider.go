@@ -1,6 +1,11 @@
 package settings
 
-import "os/user"
+import (
+	"github.com/BurntSushi/toml"
+	"os"
+	"os/user"
+	"path"
+)
 
 type CliSettings struct {
 	ApiKey string `toml:"apikey"`
@@ -13,5 +18,17 @@ func ParseSettings() (*CliSettings, error) {
 		return nil, err
 	}
 
-	usd := usr.HomeDir
+	settingsFilePath := path.Join(usr.HomeDir, ".cloudbuild")
+
+	f, err := os.Open(settingsFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var data CliSettings
+
+	meta, err := toml.DecodeReader(f, &data)
+	if err != nil {
+		return nil, err
+	}
 }
