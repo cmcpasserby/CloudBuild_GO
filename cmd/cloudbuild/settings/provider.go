@@ -7,28 +7,54 @@ import (
 	"path"
 )
 
+const dotFileName string = ".cloudbuild"
+
 type CliSettings struct {
 	ApiKey string `toml:"apikey"`
 	OrgId  string `toml:"orgid"`
 }
 
-func ParseSettings() (*CliSettings, error) {
-	usr, err := user.Current()
+func ParseDotFile() (*CliSettings, error) {
+	dotPath, err := getFilePath()
 	if err != nil {
 		return nil, err
 	}
 
-	settingsFilePath := path.Join(usr.HomeDir, ".cloudbuild")
-
-	f, err := os.Open(settingsFilePath)
-	if err != nil {
+	f, err := os.Open(dotPath)
+	if os.IsNotExist(err) {
+		createDotFile(dotPath)
+		return &CliSettings{}, nil
+	} else if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 
 	var data CliSettings
-
-	meta, err := toml.DecodeReader(f, &data)
-	if err != nil {
+	if _, err := toml.DecodeReader(f, &data); err != nil {
 		return nil, err
 	}
+
+	return &data, nil
+}
+
+func createDotFile(dotPath string) error {
+	f, err := os.Create(dotPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	data := CliSettings{}
+	if err := toml.NewEncoder(f).Encode(data); err != nil {
+		return err
+	}
+	return nil
+}
+
+func getFilePath() (string, error) {
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+	return path.Join(usr.HomeDir, dotFileName), nil
 }

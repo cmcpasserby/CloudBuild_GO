@@ -3,6 +3,7 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"github.com/cmcpasserby/CloudBuild_GO/cmd/cloudbuild/settings"
 	"github.com/cmcpasserby/CloudBuild_GO/pkg/cloudbuild"
 	"gopkg.in/AlecAivazis/survey.v1"
 	"regexp"
@@ -114,6 +115,20 @@ var Commands = map[string]Command{
 			}
 
 			fmt.Printf("%+v", result)
+			return nil
+		},
+	},
+
+	"devTest": {
+		"devTest",
+		"Test a Feature",
+		func(args ...string) error {
+			data, err := settings.ParseDotFile()
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("%+v\n", data)
 			return nil
 		},
 	},
