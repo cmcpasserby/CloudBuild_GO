@@ -43,11 +43,13 @@ commands are:`)
 
 	for _, key := range cli.CommandOrder {
 		cmd := cli.Commands[key]
-		fmt.Printf("  %-12s%s\n", cmd.Name, cmd.HelpText)
-		fmt.Println()
+		fmt.Printf("  %-12s%s   flags [", cmd.Name, cmd.HelpText)
 
 		cmd.Flags.VisitAll(func(flag *flag.Flag) {
-			fmt.Printf("Name: %s, Usage: %s\n", flag.Name, flag.Usage)
+			fmt.Printf("--%s, ", flag.Name)
 		})
+		fmt.Printf("\033[2D]")
+
+		fmt.Println()
 	}
 }
