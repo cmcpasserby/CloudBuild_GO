@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/cmcpasserby/CloudBuild_GO/cmd/cloudbuild/cli"
 	"log"
@@ -14,7 +15,12 @@ func main() {
 	}
 
 	if val, ok := cli.Commands[os.Args[1]]; ok {
-		err := val.Action(os.Args[2:]...)
+		flagsMap, err := cli.ParseFlags(val.Flags, os.Args[2:])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = val.Action(flagsMap)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -30,11 +36,18 @@ func printHelp() {
 		`Tool for working with Unity Cloud Build
 
 usage:
-  CloudBuild-Go <command>
+  CloudBuild-Go <command> [flags]
+  Global Flags: --apiKey, --orgId
 
 commands are:`)
 
 	for _, key := range cli.CommandOrder {
-		fmt.Printf("  %-12s%s\n", cli.Commands[key].Name, cli.Commands[key].HelpText)
+		cmd := cli.Commands[key]
+		fmt.Printf("  %-12s%s\n", cmd.Name, cmd.HelpText)
+		fmt.Println()
+
+		cmd.Flags.VisitAll(func(flag *flag.Flag) {
+			fmt.Printf("Name: %s, Usage: %s\n", flag.Name, flag.Usage)
+		})
 	}
 }

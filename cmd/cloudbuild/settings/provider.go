@@ -10,8 +10,8 @@ import (
 const dotFileName string = ".cloudbuild"
 
 type CliSettings struct {
-	ApiKey string `toml:"apikey"`
-	OrgId  string `toml:"orgid"`
+	ApiKey string `toml:"apiKey"`
+	OrgId  string `toml:"orgId"`
 }
 
 func ParseDotFile() (*CliSettings, error) {
