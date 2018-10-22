@@ -13,15 +13,15 @@ import (
 
 const baseUrl = "build-api.cloud.unity3d.com"
 
-type Client struct {
+type client struct {
 	BaseUrl    *url.URL
 	ApiKey     string
 	OrgId      string
 	httpClient *http.Client
 }
 
-func New(apiKey, orgId string) *Client {
-	return &Client{
+func newClient(apiKey, orgId string) *client {
+	return &client{
 		BaseUrl:    &url.URL{Scheme: "https", Host: baseUrl},
 		ApiKey:     apiKey,
 		OrgId:      orgId,
@@ -29,7 +29,7 @@ func New(apiKey, orgId string) *Client {
 	}
 }
 
-func (c *Client) newRequest(method, path string, body interface{}) (*http.Request, error) {
+func (c *client) newRequest(method, path string, body interface{}) (*http.Request, error) {
 	rel := &url.URL{Path: path}
 	u := c.BaseUrl.ResolveReference(rel)
 
@@ -54,7 +54,7 @@ func (c *Client) newRequest(method, path string, body interface{}) (*http.Reques
 	return req, nil
 }
 
-func (c *Client) newFormRequest(method, path string, form map[string]io.Reader) (*http.Request, error) {
+func (c *client) newFormRequest(method, path string, form map[string]io.Reader) (*http.Request, error) {
 	rel := &url.URL{Path: path}
 	u := c.BaseUrl.ResolveReference(rel)
 
@@ -97,7 +97,7 @@ func (c *Client) newFormRequest(method, path string, form map[string]io.Reader) 
 	return req, nil
 }
 
-func (c *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
+func (c *client) do(req *http.Request, v interface{}) (*http.Response, error) {
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err

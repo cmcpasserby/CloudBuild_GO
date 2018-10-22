@@ -2,6 +2,9 @@ package cli
 
 import (
 	"flag"
+	"fmt"
+	"github.com/cmcpasserby/CloudBuild_GO/pkg/cloudbuild"
+	"gopkg.in/AlecAivazis/survey.v1"
 	"regexp"
 )
 
@@ -27,6 +30,48 @@ var Commands = map[string]Command{
 			return flags
 		}(),
 		func(flags map[string]string) error {
+			// parse args and settings, and question if needed
+			results := struct {
+				ApiKey    string `survey:"apiKey"`
+				OrgId     string `survey:"orgId"`
+				ProjectId string `survey:"projectId"`
+			}{}
+
+			qs := make([]*survey.Question, 0, 3)
+
+			// and is valid
+			if apiKey, ok := flags["apiKey"]; ok {
+				results.ApiKey = apiKey
+			} else {
+				qs = append(qs, CreateQuestion("apiKey", "API Key"))
+			}
+
+			// and is valid
+			if orgId, ok := flags["orgId"]; ok {
+				results.OrgId = orgId
+			} else {
+				qs = append(qs, CreateQuestion("orgId", "Organization Id"))
+			}
+
+			// and is valid
+			if projectId, ok := flags["projectId"]; ok {
+				results.ProjectId = projectId
+			} else {
+				qs = append(qs, CreateQuestion("projectId", "Project Id"))
+			}
+
+			if err := survey.Ask(qs, &results); err != nil {
+				return err
+			}
+
+			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
+			creds, err := credsService.GetAllIOS(results.ProjectId)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("%+v\n", creds)
+
 			return nil
 		},
 	},

@@ -9,12 +9,12 @@ import (
 )
 
 type CredentialsService struct {
-	*Client
+	*client
 }
 
 func NewCredentialsService(apiKey, orgId string) *CredentialsService {
 	return &CredentialsService{
-		Client: New(apiKey, orgId),
+		client: newClient(apiKey, orgId),
 	}
 }
 
