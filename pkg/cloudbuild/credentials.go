@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/cmcpasserby/CloudBuild_GO/pkg/cloudbuild/responses"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -106,6 +107,10 @@ func (c *CredentialsService) UploadIOS(projectId, label, certPath, profilePath, 
 	fmt.Printf("status %s\n", resp.Status)
 
 	return &respData, nil
+}
+
+func (c *CredentialsService) DeleteIOS(projectId, certId string) (*http.Response, error) {
+	return nil, nil
 }
 
 func mustOpen(f string) *os.File {
