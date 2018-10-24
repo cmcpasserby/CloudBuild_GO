@@ -110,7 +110,21 @@ func (c *CredentialsService) UploadIOS(projectId, label, certPath, profilePath, 
 }
 
 func (c *CredentialsService) DeleteIOS(projectId, certId string) (*http.Response, error) {
-	return nil, nil
+	path := fmt.Sprintf("api/v1/orgs/%s/projects/%s/credentials/signing/ios/%s", c.OrgId, projectId, certId)
+
+	req, err := c.newRequest("DELETE", path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.do(req, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("status %s\n", resp.Status)
+
+	return resp, nil
 }
 
 func mustOpen(f string) *os.File {
