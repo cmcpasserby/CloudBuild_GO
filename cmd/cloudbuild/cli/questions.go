@@ -9,6 +9,6 @@ func CreateQuestion(name, message string) *survey.Question {
 		Name:      name,
 		Prompt:    &survey.Input{Message: message},
 		Validate:  survey.Required,
-		Transform: survey.Title,
+		Transform: survey.ToLower,
 	}
 }

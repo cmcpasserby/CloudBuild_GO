@@ -18,9 +18,73 @@ type Command struct {
 	Action   func(flags map[string]string) error
 }
 
-var CommandOrder = [...]string{"listCreds"}
+var CommandOrder = [...]string{"listCreds", "getCred"}
 
 var Commands = map[string]Command{
+
+	"getCred": {
+		"getCred",
+		"Get IOS Credential Detials",
+		func() *flag.FlagSet {
+			flags := CreateFlagSet("getCred")
+			flags.String("projectId", "", "Project Id")
+			flags.String("credId", "", "Credential Id")
+			return flags
+		}(),
+		func(flags map[string]string) error {
+			results := struct {
+				ApiKey    string `survey:"apiKey"`
+				OrgId     string `survey:"orgId"`
+				ProjectId string `survey:"projectId"`
+				CredId    string `survey:"credId"`
+			}{}
+
+			qs := make([]*survey.Question, 0, 4)
+
+			// and is valid
+			if apiKey, ok := flags["apiKey"]; ok {
+				results.ApiKey = apiKey
+			} else {
+				qs = append(qs, CreateQuestion("apiKey", "API Key"))
+			}
+
+			// and is valid
+			if orgId, ok := flags["orgId"]; ok {
+				results.OrgId = orgId
+			} else {
+				qs = append(qs, CreateQuestion("orgId", "Organization Id"))
+			}
+
+			// and is valid
+			if projectId, ok := flags["projectId"]; ok {
+				results.ProjectId = projectId
+			} else {
+				qs = append(qs, CreateQuestion("projectId", "Project Id"))
+			}
+
+			// and is valid
+			if credId, ok := flags["credId"]; ok {
+				results.CredId = credId
+			} else {
+				qs = append(qs, CreateQuestion("credId", "Credential Id"))
+			}
+
+			if err := survey.Ask(qs, &results); err != nil {
+				return err
+			}
+
+			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
+			cred, err := credsService.GetIOS(results.ProjectId, results.CredId)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("%+v\n", cred)
+
+			return nil
+		},
+	},
+
 	"listCreds": {
 		"listCreds",
 		"List all IOS Credentials",
