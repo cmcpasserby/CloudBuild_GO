@@ -19,11 +19,28 @@ type Command struct {
 	Action   func(flags map[string]string) error
 }
 
-func PopulateArgs(data interface{}) error {
+func PopulateArgs(flags map[string]string, data interface{}) error {
 	v := reflect.Indirect(reflect.ValueOf(data))
+	tt := v.Type()
+	fCount := v.NumField()
 
-	for i := 0; i < v.NumField(); i++ {
-		v.Field(i).SetString("Hello")
+	qs := make([]*survey.Question, 0, fCount)
+
+	for i := 0; i < fCount; i++ {
+		fName := tt.Field(i).Tag.Get("survey")
+		if fName == "" {
+			fName = tt.Field(i).Name
+		}
+
+		if val, ok := flags[fName]; ok {
+			v.Field(i).SetString(val)
+		} else {
+			qs = append(qs, CreateQuestion(fName, fName))
+		}
+	}
+
+	if err := survey.Ask(qs, data); err != nil {
+		return err
 	}
 
 	return nil
@@ -50,44 +67,7 @@ var Commands = map[string]Command{
 				CredId    string `survey:"credId"`
 			}{}
 
-			if err := PopulateArgs(&results); err != nil {
-				return err
-			}
-
-			fmt.Println(results.ApiKey)
-			fmt.Println(results.OrgId)
-
-			qs := make([]*survey.Question, 0, 4)
-
-			// and is valid
-			if apiKey, ok := flags["apiKey"]; ok {
-				results.ApiKey = apiKey
-			} else {
-				qs = append(qs, CreateQuestion("apiKey", "API Key"))
-			}
-
-			// and is valid
-			if orgId, ok := flags["orgId"]; ok {
-				results.OrgId = orgId
-			} else {
-				qs = append(qs, CreateQuestion("orgId", "Organization Id"))
-			}
-
-			// and is valid
-			if projectId, ok := flags["projectId"]; ok {
-				results.ProjectId = projectId
-			} else {
-				qs = append(qs, CreateQuestion("projectId", "Project Id"))
-			}
-
-			// and is valid
-			if credId, ok := flags["credId"]; ok {
-				results.CredId = credId
-			} else {
-				qs = append(qs, CreateQuestion("credId", "Credential Id"))
-			}
-
-			if err := survey.Ask(qs, &results); err != nil {
+			if err := PopulateArgs(flags, &results); err != nil {
 				return err
 			}
 
@@ -119,30 +99,7 @@ var Commands = map[string]Command{
 				ProjectId string `survey:"projectId"`
 			}{}
 
-			qs := make([]*survey.Question, 0, 3)
-
-			// and is valid
-			if apiKey, ok := flags["apiKey"]; ok {
-				results.ApiKey = apiKey
-			} else {
-				qs = append(qs, CreateQuestion("apiKey", "API Key"))
-			}
-
-			// and is valid
-			if orgId, ok := flags["orgId"]; ok {
-				results.OrgId = orgId
-			} else {
-				qs = append(qs, CreateQuestion("orgId", "Organization Id"))
-			}
-
-			// and is valid
-			if projectId, ok := flags["projectId"]; ok {
-				results.ProjectId = projectId
-			} else {
-				qs = append(qs, CreateQuestion("projectId", "Project Id"))
-			}
-
-			if err := survey.Ask(qs, &results); err != nil {
+			if err := PopulateArgs(flags, &results); err != nil {
 				return err
 			}
 
