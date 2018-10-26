@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/cmcpasserby/CloudBuild_GO/pkg/cloudbuild"
 	"gopkg.in/AlecAivazis/survey.v1"
+	"reflect"
 	"regexp"
 )
 
@@ -16,6 +17,16 @@ type Command struct {
 	HelpText string
 	Flags    *flag.FlagSet
 	Action   func(flags map[string]string) error
+}
+
+func PopulateArgs(data interface{}) error {
+	v := reflect.Indirect(reflect.ValueOf(data))
+
+	for i := 0; i < v.NumField(); i++ {
+		v.Field(i).SetString("Hello")
+	}
+
+	return nil
 }
 
 var CommandOrder = [...]string{"listCreds", "getCred"}
@@ -38,6 +49,13 @@ var Commands = map[string]Command{
 				ProjectId string `survey:"projectId"`
 				CredId    string `survey:"credId"`
 			}{}
+
+			if err := PopulateArgs(&results); err != nil {
+				return err
+			}
+
+			fmt.Println(results.ApiKey)
+			fmt.Println(results.OrgId)
 
 			qs := make([]*survey.Question, 0, 4)
 
