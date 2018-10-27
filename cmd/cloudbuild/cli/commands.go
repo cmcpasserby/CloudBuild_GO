@@ -35,7 +35,12 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 		if val, ok := flags[fName]; ok {
 			v.Field(i).SetString(val)
 		} else {
-			qs = append(qs, CreateQuestion(fName, fName))
+			qs = append(qs, &survey.Question{
+				Name:      fName,
+				Prompt:    &survey.Input{Message: fName},
+				Validate:  survey.Required,
+				Transform: survey.ToLower,
+			})
 		}
 	}
 
