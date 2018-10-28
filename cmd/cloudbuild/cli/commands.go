@@ -51,7 +51,7 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 	return nil
 }
 
-var CommandOrder = [...]string{"listCreds", "getCred"}
+var CommandOrder = [...]string{"getCred", "listCreds", "UpdateCred", "UploadCred", "DeleteCred"}
 
 var Commands = map[string]Command{
 
@@ -115,6 +115,119 @@ var Commands = map[string]Command{
 			}
 
 			fmt.Printf("%+v\n", creds)
+
+			return nil
+		},
+	},
+
+	"updateIOS": {
+		"updateIOS",
+		"Update a IOS Credential",
+		func() *flag.FlagSet {
+			flags := CreateFlagSet("updateIOS")
+			flags.String("projectId", "", "Project Id")
+			flags.String("certId", "", "Certificate Id")
+			flags.String("label", "", "Label")
+			flags.String("certPath", "", "Certificate Path")
+			flags.String("profilePath", "", "Provisioning Profile Path")
+			flags.String("certPass", "", "Certificate password")
+			return flags
+		}(),
+		func(flags map[string]string) error {
+			results := struct {
+				ApiKey      string `survey:"apiKey"`
+				OrgId       string `survey:"orgId"`
+				ProjectId   string `survey:"projectId"`
+				CertId      string `survey:"certId"`
+				Label       string `survey:"label"`
+				CertPath    string `survey:"certPath"`
+				ProfilePath string `survey:"profilePath"`
+				CertPass    string `survey:"certPass"`
+			}{}
+
+			if err := PopulateArgs(flags, &results); err != nil {
+				return err
+			}
+
+			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
+			cred, err := credsService.UpdateIOS(results.ProjectId, results.CertId, results.Label, results.CertId, results.ProfilePath, results.CertPass)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("%+v\n", cred)
+
+			return nil
+		},
+	},
+
+	"uploadIOS": {
+		"uploadIOS",
+		"Upload a IOS Credential",
+		func() *flag.FlagSet {
+			flags := CreateFlagSet("uploadIOS")
+			flags.String("projectId", "", "Project Id")
+			flags.String("label", "", "Label")
+			flags.String("certPath", "", "Certificate Path")
+			flags.String("profilePath", "", "Provisioning Profile Path")
+			flags.String("certPass", "", "Certificate password")
+			return flags
+		}(),
+		func(flags map[string]string) error {
+			results := struct {
+				ApiKey      string `survey:"apiKey"`
+				OrgId       string `survey:"orgId"`
+				ProjectId   string `survey:"projectId"`
+				Label       string `survey:"label"`
+				CertPath    string `survey:"certPath"`
+				ProfilePath string `survey:"profilePath"`
+				CertPass    string `survey:"certPass"`
+			}{}
+
+			if err := PopulateArgs(flags, &results); err != nil {
+				return err
+			}
+
+			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
+			cred, err := credsService.UploadIOS(results.ProjectId, results.Label, results.CertPath, results.ProfilePath, results.CertPass)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("%+v\n", cred)
+
+			return nil
+		},
+	},
+
+	"deleteIOS": {
+		"DeleteIOS",
+		"Delete a IOS Credential",
+		func() *flag.FlagSet {
+			flags := CreateFlagSet("deleteIOS")
+			flags.String("projectId", "", "Project Id")
+			flags.String("credId", "", "Credential Id")
+			return flags
+		}(),
+		func(flags map[string]string) error {
+			results := struct {
+				ApiKey    string `survey:"apiKey"`
+				OrgId     string `survey:"orgId"`
+				ProjectId string `survey:"projectId"`
+				CertId    string `survey:"certId"`
+			}{}
+
+			if err := PopulateArgs(flags, &results); err != nil {
+				return err
+			}
+
+			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
+			resp, err := credsService.DeleteIOS(results.ProjectId, results.CertId)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(resp.Status)
 
 			return nil
 		},
