@@ -51,7 +51,7 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 	return nil
 }
 
-var CommandOrder = [...]string{"getCred", "listCreds", "UpdateCred", "UploadCred", "DeleteCred"}
+var CommandOrder = [...]string{"getCred", "listCreds", "updateCred", "uploadCred", "deleteCred"}
 
 var Commands = map[string]Command{
 
@@ -120,11 +120,11 @@ var Commands = map[string]Command{
 		},
 	},
 
-	"updateIOS": {
-		"updateIOS",
+	"updateCred": {
+		"updateCred",
 		"Update a IOS Credential",
 		func() *flag.FlagSet {
-			flags := CreateFlagSet("updateIOS")
+			flags := CreateFlagSet("updateCred")
 			flags.String("projectId", "", "Project Id")
 			flags.String("certId", "", "Certificate Id")
 			flags.String("label", "", "Label")
@@ -161,11 +161,11 @@ var Commands = map[string]Command{
 		},
 	},
 
-	"uploadIOS": {
-		"uploadIOS",
+	"uploadCred": {
+		"uploadCred",
 		"Upload a IOS Credential",
 		func() *flag.FlagSet {
-			flags := CreateFlagSet("uploadIOS")
+			flags := CreateFlagSet("uploadCred")
 			flags.String("projectId", "", "Project Id")
 			flags.String("label", "", "Label")
 			flags.String("certPath", "", "Certificate Path")
@@ -200,11 +200,11 @@ var Commands = map[string]Command{
 		},
 	},
 
-	"deleteIOS": {
-		"DeleteIOS",
+	"deleteCred": {
+		"DeleteCred",
 		"Delete a IOS Credential",
 		func() *flag.FlagSet {
-			flags := CreateFlagSet("deleteIOS")
+			flags := CreateFlagSet("deleteCred")
 			flags.String("projectId", "", "Project Id")
 			flags.String("credId", "", "Credential Id")
 			return flags
