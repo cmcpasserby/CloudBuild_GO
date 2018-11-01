@@ -4,13 +4,6 @@ import (
 	"time"
 )
 
-type Platform string
-
-const (
-	PlatformIOS     Platform = "ios"
-	PlatformAndroid Platform = "android"
-)
-
 type IOSCred struct {
 	Platform            Platform               `json:"Platform"`
 	Label               string                 `json:"label"`
@@ -37,9 +30,4 @@ type IOSProvisioningProfile struct {
 	IsEnterpriseProfile bool      `json:"isEnterpriseProfile"`
 	Type                string    `json:"type"`
 	NumDevices          int       `json:"numDevices"`
-}
-
-type Link struct {
-	Method string `json:"method"`
-	Href   string `json:"href"`
 }
