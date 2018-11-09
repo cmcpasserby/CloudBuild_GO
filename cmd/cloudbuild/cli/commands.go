@@ -28,6 +28,7 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 
 	for i := 0; i < fCount; i++ {
 		fName := tt.Field(i).Tag.Get("survey")
+		fType := tt.Field(i).Tag.Get("type")
 		if fName == "" {
 			fName = tt.Field(i).Name
 		}
@@ -35,11 +36,18 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 		if val, ok := flags[fName]; ok {
 			v.Field(i).SetString(val)
 		} else {
+			var promptType survey.Prompt
+
+			if fType == "password" {
+				promptType = &survey.Password{Message: fName}
+			} else {
+				promptType = &survey.Input{Message: fName}
+			}
+
 			qs = append(qs, &survey.Question{
-				Name:      fName,
-				Prompt:    &survey.Input{Message: fName},
-				Validate:  survey.Required,
-				Transform: survey.ToLower,
+				Name:     fName,
+				Prompt:   promptType,
+				Validate: survey.Required,
 			})
 		}
 	}
@@ -142,7 +150,7 @@ var Commands = map[string]Command{
 				Label       string `survey:"label"`
 				CertPath    string `survey:"certPath"`
 				ProfilePath string `survey:"profilePath"`
-				CertPass    string `survey:"certPass"`
+				CertPass    string `survey:"certPass" type:"password"`
 			}{}
 
 			if err := PopulateArgs(flags, &results); err != nil {
@@ -181,7 +189,7 @@ var Commands = map[string]Command{
 				Label       string `survey:"label"`
 				CertPath    string `survey:"certPath"`
 				ProfilePath string `survey:"profilePath"`
-				CertPass    string `survey:"certPass"`
+				CertPass    string `survey:"certPass" type:"password"`
 			}{}
 
 			if err := PopulateArgs(flags, &results); err != nil {
@@ -201,7 +209,7 @@ var Commands = map[string]Command{
 	},
 
 	"deleteCred": {
-		"DeleteCred",
+		"deleteCred",
 		"Delete a IOS Credential",
 		func() *flag.FlagSet {
 			flags := CreateFlagSet("deleteCred")
