@@ -46,10 +46,11 @@ commands are:`)
 		fmt.Printf("  %-12s%s   flags: [", cmd.Name, cmd.HelpText)
 
 		cmd.Flags.VisitAll(func(flag *flag.Flag) {
-			fmt.Printf("--%s, ", flag.Name)
+			if flag.Name != "apiKey" && flag.Name != "orgId" {
+				fmt.Printf("--%s, ", flag.Name)
+			}
 		})
 		fmt.Printf("\033[2D]")
-
 		fmt.Println()
 	}
 }
