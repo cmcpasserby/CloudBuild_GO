@@ -9,8 +9,10 @@ import (
 	"regexp"
 )
 
-var reProjectId = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
-var reApiKey = regexp.MustCompile(`[0-9a-f]{32}`)
+var (
+	reProjectId = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+	reApiKey    = regexp.MustCompile(`[0-9a-f]{32}`)
+)
 
 type Command struct {
 	Name     string
@@ -59,7 +61,7 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 	return nil
 }
 
-var CommandOrder = [...]string{"getCred", "listCreds", "updateCred", "uploadCred", "deleteCred"}
+var CommandOrder = [...]string{"getCred", "listCreds", "updateCred", "uploadCred", "deleteCred", "listProjects"}
 
 var Commands = map[string]Command{
 
@@ -236,6 +238,37 @@ var Commands = map[string]Command{
 			}
 
 			fmt.Println(resp.Status)
+
+			return nil
+		},
+	},
+
+	"listProjects": {
+		"listProjects",
+		"List Projects On CloudBuild",
+		func() *flag.FlagSet {
+			flags := CreateFlagSet("listProjects")
+			return flags
+		}(),
+		func(flags map[string]string) error {
+			results := struct {
+				ApiKey string `survey:"apiKey"`
+				OrgId  string `survey:"orgId"`
+			}{}
+
+			if err := PopulateArgs(flags, &results); err != nil {
+				return err
+			}
+
+			projectService := cloudbuild.NewProjectsService(results.ApiKey, results.OrgId)
+			projects, err := projectService.ListAll()
+			if err != nil {
+				return err
+			}
+
+			for _, proj := range projects {
+				fmt.Printf("Name: %s || Id: %s\n", proj.Name, proj.Guid)
+			}
 
 			return nil
 		},
