@@ -22,7 +22,9 @@ func ParseDotFile() (*CliSettings, error) {
 
 	f, err := os.Open(dotPath)
 	if os.IsNotExist(err) {
-		createDotFile(dotPath)
+		if err := createDotFile(dotPath); err != nil {
+			return nil, err
+		}
 		return &CliSettings{}, nil
 	} else if err != nil {
 		return nil, err
