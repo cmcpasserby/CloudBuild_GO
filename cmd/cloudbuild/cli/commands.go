@@ -138,7 +138,6 @@ var Commands = map[string]Command{
 		"Update a IOS Credential",
 		func() *flag.FlagSet {
 			flags := CreateFlagSet("updateCred")
-			flags.String("projectId", "", "Project Id")
 			flags.String("certId", "", "Certificate Id")
 			flags.String("label", "", "Label")
 			flags.String("certPath", "", "Certificate Path")
@@ -150,7 +149,6 @@ var Commands = map[string]Command{
 			results := struct {
 				ApiKey      string `survey:"apiKey"`
 				OrgId       string `survey:"orgId"`
-				ProjectId   string `survey:"projectId"`
 				CertId      string `survey:"certId"`
 				Label       string `survey:"label"`
 				CertPath    string `survey:"certPath"`
@@ -163,7 +161,7 @@ var Commands = map[string]Command{
 			}
 
 			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
-			cred, err := credsService.UpdateIOS(results.ProjectId, results.CertId, results.Label, results.CertId, results.ProfilePath, results.CertPass)
+			cred, err := credsService.UpdateIOS(results.CertId, results.Label, results.CertPath, results.ProfilePath, results.CertPass)
 			if err != nil {
 				return err
 			}

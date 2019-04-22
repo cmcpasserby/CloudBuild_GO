@@ -57,8 +57,8 @@ func (c *CredentialsService) GetAllIOS(projectId string) ([]responses.IOSCred, e
 	return credentials, nil
 }
 
-func (c *CredentialsService) UpdateIOS(projectId, certId, label, certPath, profilePath, certPass string) (*responses.IOSCred, error) {
-	path := fmt.Sprintf("api/v1/orgs/%s/projects/%s/credentials/signing/ios/%s", c.OrgId, projectId, certId)
+func (c *CredentialsService) UpdateIOS(certId, label, certPath, profilePath, certPass string) (*responses.IOSCred, error) {
+	path := fmt.Sprintf("api/v1/orgs/%s/credentials/signing/ios/%s", c.OrgId, certId)
 
 	formData := map[string]io.Reader{
 		"label":                   strings.NewReader(label),
