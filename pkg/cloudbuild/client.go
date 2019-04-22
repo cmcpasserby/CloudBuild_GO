@@ -3,8 +3,10 @@ package cloudbuild
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -103,6 +105,18 @@ func (c *client) do(req *http.Request, v interface{}) (*http.Response, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		bodyString, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		return nil, errors.New(string(bodyString))
+	}
+
+	if resp.StatusCode == 204 { // no content to decode
+		return resp, nil
+	}
 
 	if v != nil {
 		if err := json.NewDecoder(resp.Body).Decode(v); err != nil {

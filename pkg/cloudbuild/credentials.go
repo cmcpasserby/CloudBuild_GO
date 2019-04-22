@@ -122,8 +122,6 @@ func (c *CredentialsService) DeleteIOS(certId string) (*http.Response, error) {
 		return nil, err
 	}
 
-	fmt.Printf("status %s\n", resp.Status)
-
 	return resp, nil
 }
 
