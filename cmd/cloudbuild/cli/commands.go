@@ -3,8 +3,11 @@ package cli
 import (
 	"flag"
 	"fmt"
+	"github.com/cmcpasserby/CloudBuild_GO/cmd/cloudbuild/settings"
 	"github.com/cmcpasserby/CloudBuild_GO/pkg/cloudbuild"
 	"gopkg.in/AlecAivazis/survey.v1"
+	"os"
+	"os/exec"
 	"reflect"
 	"regexp"
 )
@@ -61,7 +64,7 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 	return nil
 }
 
-var CommandOrder = [...]string{"getCred", "listCreds", "updateCred", "uploadCred", "deleteCred", "listProjects"}
+var CommandOrder = [...]string{"getCred", "listCreds", "updateCred", "uploadCred", "deleteCred", "listProjects", "config"}
 
 var Commands = map[string]Command{
 
@@ -268,6 +271,38 @@ var Commands = map[string]Command{
 
 			for _, proj := range projects {
 				fmt.Printf("Name: %s || Id: %s\n", proj.Name, proj.Guid)
+			}
+
+			return nil
+		},
+	},
+
+	"config": {
+		"config",
+		"Edit config file",
+		func() *flag.FlagSet {
+			return flag.NewFlagSet("config", flag.ExitOnError)
+		}(),
+		func(flags map[string]string) error {
+			dotFilePath, err := settings.GetFilePath()
+			if err != nil {
+				return err
+			}
+
+			if _, err := os.Stat(dotFilePath); os.IsNotExist(err) {
+				if err := settings.CreateDotFile(dotFilePath); err != nil {
+					return err
+				}
+			}
+
+			cmd := exec.Command("vim", dotFilePath)
+
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+
+			if err := cmd.Run(); err != nil {
+				return err
 			}
 
 			return nil

@@ -15,14 +15,14 @@ type CliSettings struct {
 }
 
 func ParseDotFile() (*CliSettings, error) {
-	dotPath, err := getFilePath()
+	dotPath, err := GetFilePath()
 	if err != nil {
 		return nil, err
 	}
 
 	f, err := os.Open(dotPath)
 	if os.IsNotExist(err) {
-		if err := createDotFile(dotPath); err != nil {
+		if err := CreateDotFile(dotPath); err != nil {
 			return nil, err
 		}
 		return &CliSettings{}, nil
@@ -39,7 +39,7 @@ func ParseDotFile() (*CliSettings, error) {
 	return &data, nil
 }
 
-func createDotFile(dotPath string) error {
+func CreateDotFile(dotPath string) error {
 	f, err := os.Create(dotPath)
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func createDotFile(dotPath string) error {
 	return nil
 }
 
-func getFilePath() (string, error) {
+func GetFilePath() (string, error) {
 	usr, err := user.Current()
 	if err != nil {
 		return "", err
