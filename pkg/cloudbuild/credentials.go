@@ -128,6 +128,7 @@ func (c *CredentialsService) DeleteIOS(certId string) (*http.Response, error) {
 }
 
 func mustOpen(f string) *os.File {
+	f = strings.TrimSpace(f)
 	r, err := os.Open(f)
 	if err != nil {
 		panic(err)

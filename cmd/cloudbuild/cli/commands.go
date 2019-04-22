@@ -46,6 +46,8 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 
 			if fType == "password" {
 				promptType = &survey.Password{Message: fName}
+			} else if fType == "filePath" {
+				promptType = &survey.Input{Message: fmt.Sprintf("%s (absoulte path, can drag and drop)", fName)}
 			} else {
 				promptType = &survey.Input{Message: fName}
 			}
@@ -157,8 +159,8 @@ var Commands = map[string]Command{
 				OrgId       string `survey:"orgId"`
 				CertId      string `survey:"certId"`
 				Label       string `survey:"label"`
-				CertPath    string `survey:"certPath"`
-				ProfilePath string `survey:"profilePath"`
+				CertPath    string `survey:"certPath" type:"filePath"`
+				ProfilePath string `survey:"profilePath" type:"filePath"`
 				CertPass    string `survey:"certPass" type:"password"`
 			}{}
 
@@ -194,8 +196,8 @@ var Commands = map[string]Command{
 				ApiKey      string `survey:"apiKey"`
 				OrgId       string `survey:"orgId"`
 				Label       string `survey:"label"`
-				CertPath    string `survey:"certPath"`
-				ProfilePath string `survey:"profilePath"`
+				CertPath    string `survey:"certPath" type:"filePath"`
+				ProfilePath string `survey:"profilePath" type:"filePath"`
 				CertPass    string `survey:"certPass" type:"password"`
 			}{}
 
