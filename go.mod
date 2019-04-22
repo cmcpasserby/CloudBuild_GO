@@ -1,4 +1,4 @@
-module github.com/cmcpasserby/CloudBuild_GO
+module github.com/cmcpasserby/ucb
 
 go 1.12
 

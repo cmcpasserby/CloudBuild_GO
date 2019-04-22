@@ -2,7 +2,7 @@ package cli
 
 import (
 	"flag"
-	"github.com/cmcpasserby/CloudBuild_GO/cmd/cloudbuild/settings"
+	"github.com/cmcpasserby/ucb/cmd/cloudbuild/settings"
 )
 
 func CreateFlagSet(name string) *flag.FlagSet {

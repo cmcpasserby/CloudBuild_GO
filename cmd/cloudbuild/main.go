@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/cmcpasserby/CloudBuild_GO/cmd/cloudbuild/cli"
+	"github.com/cmcpasserby/ucb/cmd/cloudbuild/cli"
 	"log"
 	"os"
 )
@@ -36,7 +36,7 @@ func printHelp() {
 		`Tool for working with Unity Cloud Build
 
 usage:
-  CloudBuild-Go <command> [flags]
+  ucb <command> [flags]
   Global Flags: --apiKey, --orgId (these are best defined in the config file via 'CloudBuild-Go config')
 
 commands are:`)

@@ -2,7 +2,7 @@ package cloudbuild
 
 import (
 	"fmt"
-	"github.com/cmcpasserby/CloudBuild_GO/pkg/cloudbuild/responses"
+	"github.com/cmcpasserby/ucb/pkg/cloudbuild/responses"
 	"io"
 	"net/http"
 	"os"
