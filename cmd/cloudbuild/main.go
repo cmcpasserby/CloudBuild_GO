@@ -41,16 +41,41 @@ usage:
 
 commands are:`)
 
+	maxNameLen := 0
+	maxDescLen := 0
+
 	for _, key := range cli.CommandOrder {
 		cmd := cli.Commands[key]
-		fmt.Printf("  %-12s%s   flags: [", cmd.Name, cmd.HelpText)
+		if len(cmd.Name) > maxNameLen {
+			maxNameLen = len(cmd.Name)
+		}
+
+		if len(cmd.HelpText) > maxDescLen {
+			maxDescLen = len(cmd.HelpText)
+		}
+	}
+	maxNameLen += 2
+	maxDescLen += 2
+
+	for _, key := range cli.CommandOrder {
+		cmd := cli.Commands[key]
+		fmt.Printf("  %-*s%-*sflags: [", maxNameLen, cmd.Name, maxDescLen, cmd.HelpText)
+
+		hasFlags := false
 
 		cmd.Flags.VisitAll(func(flag *flag.Flag) {
 			if flag.Name != "apiKey" && flag.Name != "orgId" {
 				fmt.Printf("--%s, ", flag.Name)
+				hasFlags = true
 			}
 		})
-		fmt.Printf("\033[2D]")
+
+		if hasFlags {
+			fmt.Printf("\033[2D]")
+		} else {
+			fmt.Printf("]")
+		}
+
 		fmt.Println()
 	}
 }
