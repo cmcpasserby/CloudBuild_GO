@@ -125,11 +125,7 @@ var Commands = map[string]Command{
 				CredId string `survey:"credId" type:"credId"`
 			}{}
 
-			config, err := settings.ParseDotFile()
-			if err != nil {
-				return err
-			}
-			credsService := cloudbuild.NewCredentialsService(config.ApiKey, config.OrgId)
+			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
 
 			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
@@ -198,11 +194,7 @@ var Commands = map[string]Command{
 				CertPass    string `survey:"certPass" type:"password"`
 			}{}
 
-			config, err := settings.ParseDotFile()
-			if err != nil {
-				return err
-			}
-			credsService := cloudbuild.NewCredentialsService(config.ApiKey, config.OrgId)
+			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
 
 			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
@@ -240,7 +232,7 @@ var Commands = map[string]Command{
 				CertPass    string `survey:"certPass" type:"password"`
 			}{}
 
-			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
+			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
 
 			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
@@ -272,11 +264,7 @@ var Commands = map[string]Command{
 				CertId string `survey:"certId" type:"certId"`
 			}{}
 
-			config, err := settings.ParseDotFile()
-			if err != nil {
-				return err
-			}
-			credsService := cloudbuild.NewCredentialsService(config.ApiKey, config.OrgId)
+			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
 
 			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
