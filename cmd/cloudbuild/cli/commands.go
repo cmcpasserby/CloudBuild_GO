@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/cmcpasserby/CloudBuild_GO/cmd/cloudbuild/settings"
@@ -66,6 +67,15 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 
 var CommandOrder = [...]string{"getCred", "listCreds", "updateCred", "uploadCred", "deleteCred", "listProjects", "config"}
 
+func prettyPrint(data interface{}) {
+	if s, err := json.MarshalIndent(data, "", "    "); err == nil {
+		fmt.Println(string(s))
+		return
+	}
+
+	fmt.Printf("%+v\n", data)
+}
+
 var Commands = map[string]Command{
 
 	"getCred": {
@@ -93,7 +103,8 @@ var Commands = map[string]Command{
 				return err
 			}
 
-			fmt.Printf("%+v\n", cred)
+			// fmt.Printf("%+v\n", cred)
+			prettyPrint(cred)
 
 			return nil
 		},
@@ -122,7 +133,7 @@ var Commands = map[string]Command{
 				return err
 			}
 
-			fmt.Printf("%+v\n", creds)
+			prettyPrint(creds)
 
 			return nil
 		},
@@ -161,7 +172,7 @@ var Commands = map[string]Command{
 				return err
 			}
 
-			fmt.Printf("%+v\n", cred)
+			prettyPrint(cred)
 
 			return nil
 		},
@@ -198,7 +209,7 @@ var Commands = map[string]Command{
 				return err
 			}
 
-			fmt.Printf("%+v\n", cred)
+			prettyPrint(cred)
 
 			return nil
 		},
