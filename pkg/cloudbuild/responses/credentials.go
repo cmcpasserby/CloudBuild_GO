@@ -1,18 +1,19 @@
 package responses
 
 import (
+	"encoding/json"
 	"time"
 )
 
 type IOSCred struct {
-	Platform            Platform               `json:"Platform"`
-	Label               string                 `json:"label"`
-	Id                  string                 `json:"credentialid"`
-	Created             time.Time              `json:"created"`
-	LastMod             time.Time              `json:"lastMod"`
-	Certificate         IOSCert                `json:"certificate"`
-	ProvisioningProfile IOSProvisioningProfile `json:"provisioningProfile"`
-	Links               map[string]Link        `json:"links"`
+	Platform            Platform                   `json:"Platform"`
+	Label               string                     `json:"label"`
+	Id                  string                     `json:"credentialid"`
+	Created             time.Time                  `json:"created"`
+	LastMod             time.Time                  `json:"lastMod"`
+	Certificate         IOSCert                    `json:"certificate"`
+	ProvisioningProfile IOSProvisioningProfile     `json:"provisioningProfile"`
+	Links               map[string]json.RawMessage `json:"links"`
 }
 
 type IOSCert struct {

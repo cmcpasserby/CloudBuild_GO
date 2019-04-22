@@ -19,8 +19,8 @@ func NewCredentialsService(apiKey, orgId string) *CredentialsService {
 	}
 }
 
-func (c *CredentialsService) GetIOS(projectId, credId string) (*responses.IOSCred, error) {
-	path := fmt.Sprintf("api/v1/orgs/%s/projects/%s/credentials/signing/ios/%s", c.OrgId, projectId, credId)
+func (c *CredentialsService) GetIOS(credId string) (*responses.IOSCred, error) {
+	path := fmt.Sprintf("api/v1/orgs/%s/credentials/signing/ios/%s", c.OrgId, credId)
 
 	req, err := c.newRequest("GET", path, nil)
 	if err != nil {
@@ -38,8 +38,8 @@ func (c *CredentialsService) GetIOS(projectId, credId string) (*responses.IOSCre
 	return &credential, nil
 }
 
-func (c *CredentialsService) GetAllIOS(projectId string) ([]responses.IOSCred, error) {
-	path := fmt.Sprintf("api/v1/orgs/%s/projects/%s/credentials/signing/ios", c.OrgId, projectId)
+func (c *CredentialsService) GetAllIOS() ([]responses.IOSCred, error) {
+	path := fmt.Sprintf("api/v1/orgs/%s/credentials/signing/ios", c.OrgId)
 
 	req, err := c.newRequest("GET", path, nil)
 	if err != nil {
@@ -83,8 +83,8 @@ func (c *CredentialsService) UpdateIOS(certId, label, certPath, profilePath, cer
 	return &respData, nil
 }
 
-func (c *CredentialsService) UploadIOS(projectId, label, certPath, profilePath, certPass string) (*responses.IOSCred, error) {
-	path := fmt.Sprintf("api/v1/orgs/%s/projects/%s/credentials/signing/ios", c.OrgId, projectId)
+func (c *CredentialsService) UploadIOS(label, certPath, profilePath, certPass string) (*responses.IOSCred, error) {
+	path := fmt.Sprintf("api/v1/orgs/%s/credentials/signing/ios", c.OrgId)
 
 	formData := map[string]io.Reader{
 		"label":                   strings.NewReader(label),
@@ -109,8 +109,8 @@ func (c *CredentialsService) UploadIOS(projectId, label, certPath, profilePath, 
 	return &respData, nil
 }
 
-func (c *CredentialsService) DeleteIOS(projectId, certId string) (*http.Response, error) {
-	path := fmt.Sprintf("api/v1/orgs/%s/projects/%s/credentials/signing/ios/%s", c.OrgId, projectId, certId)
+func (c *CredentialsService) DeleteIOS(certId string) (*http.Response, error) {
+	path := fmt.Sprintf("api/v1/orgs/%s/credentials/signing/ios/%s", c.OrgId, certId)
 
 	req, err := c.newRequest("DELETE", path, nil)
 	if err != nil {

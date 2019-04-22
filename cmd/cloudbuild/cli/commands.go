@@ -73,16 +73,14 @@ var Commands = map[string]Command{
 		"Get IOS Credential Detials",
 		func() *flag.FlagSet {
 			flags := CreateFlagSet("getCred")
-			flags.String("projectId", "", "Project Id")
 			flags.String("credId", "", "Credential Id")
 			return flags
 		}(),
 		func(flags map[string]string) error {
 			results := struct {
-				ApiKey    string `survey:"apiKey"`
-				OrgId     string `survey:"orgId"`
-				ProjectId string `survey:"projectId"`
-				CredId    string `survey:"credId"`
+				ApiKey string `survey:"apiKey"`
+				OrgId  string `survey:"orgId"`
+				CredId string `survey:"credId"`
 			}{}
 
 			if err := PopulateArgs(flags, &results); err != nil {
@@ -90,7 +88,7 @@ var Commands = map[string]Command{
 			}
 
 			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
-			cred, err := credsService.GetIOS(results.ProjectId, results.CredId)
+			cred, err := credsService.GetIOS(results.CredId)
 			if err != nil {
 				return err
 			}
@@ -105,16 +103,13 @@ var Commands = map[string]Command{
 		"listCreds",
 		"List all IOS Credentials",
 		func() *flag.FlagSet {
-			flags := CreateFlagSet("listCreds")
-			flags.String("projectId", "", "Project Id")
-			return flags
+			return CreateFlagSet("listCreds")
 		}(),
 		func(flags map[string]string) error {
 			// parse args and settings, and question if needed
 			results := struct {
-				ApiKey    string `survey:"apiKey"`
-				OrgId     string `survey:"orgId"`
-				ProjectId string `survey:"projectId"`
+				ApiKey string `survey:"apiKey"`
+				OrgId  string `survey:"orgId"`
 			}{}
 
 			if err := PopulateArgs(flags, &results); err != nil {
@@ -122,7 +117,7 @@ var Commands = map[string]Command{
 			}
 
 			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
-			creds, err := credsService.GetAllIOS(results.ProjectId)
+			creds, err := credsService.GetAllIOS()
 			if err != nil {
 				return err
 			}
@@ -177,7 +172,6 @@ var Commands = map[string]Command{
 		"Upload a IOS Credential",
 		func() *flag.FlagSet {
 			flags := CreateFlagSet("uploadCred")
-			flags.String("projectId", "", "Project Id")
 			flags.String("label", "", "Label")
 			flags.String("certPath", "", "Certificate Path")
 			flags.String("profilePath", "", "Provisioning Profile Path")
@@ -188,7 +182,6 @@ var Commands = map[string]Command{
 			results := struct {
 				ApiKey      string `survey:"apiKey"`
 				OrgId       string `survey:"orgId"`
-				ProjectId   string `survey:"projectId"`
 				Label       string `survey:"label"`
 				CertPath    string `survey:"certPath"`
 				ProfilePath string `survey:"profilePath"`
@@ -200,7 +193,7 @@ var Commands = map[string]Command{
 			}
 
 			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
-			cred, err := credsService.UploadIOS(results.ProjectId, results.Label, results.CertPath, results.ProfilePath, results.CertPass)
+			cred, err := credsService.UploadIOS(results.Label, results.CertPath, results.ProfilePath, results.CertPass)
 			if err != nil {
 				return err
 			}
@@ -216,16 +209,14 @@ var Commands = map[string]Command{
 		"Delete a IOS Credential",
 		func() *flag.FlagSet {
 			flags := CreateFlagSet("deleteCred")
-			flags.String("projectId", "", "Project Id")
 			flags.String("credId", "", "Credential Id")
 			return flags
 		}(),
 		func(flags map[string]string) error {
 			results := struct {
-				ApiKey    string `survey:"apiKey"`
-				OrgId     string `survey:"orgId"`
-				ProjectId string `survey:"projectId"`
-				CertId    string `survey:"certId"`
+				ApiKey string `survey:"apiKey"`
+				OrgId  string `survey:"orgId"`
+				CertId string `survey:"certId"`
 			}{}
 
 			if err := PopulateArgs(flags, &results); err != nil {
@@ -233,7 +224,7 @@ var Commands = map[string]Command{
 			}
 
 			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
-			resp, err := credsService.DeleteIOS(results.ProjectId, results.CertId)
+			resp, err := credsService.DeleteIOS(results.CertId)
 			if err != nil {
 				return err
 			}
