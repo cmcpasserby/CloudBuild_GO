@@ -104,6 +104,10 @@ func (c *client) do(req *http.Request, v interface{}) (*http.Response, error) {
 	}
 	defer resp.Body.Close()
 
-	err = json.NewDecoder(resp.Body).Decode(v)
-	return resp, err
+	if v != nil {
+		if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
+			return nil, err
+		}
+	}
+	return resp, nil
 }

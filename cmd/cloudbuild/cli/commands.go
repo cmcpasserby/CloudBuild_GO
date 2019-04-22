@@ -13,11 +13,6 @@ import (
 	"regexp"
 )
 
-var (
-	reProjectId = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
-	reApiKey    = regexp.MustCompile(`[0-9a-f]{32}`)
-)
-
 type Command struct {
 	Name     string
 	HelpText string
@@ -25,12 +20,16 @@ type Command struct {
 	Action   func(flags map[string]string) error
 }
 
-func PopulateArgs(flags map[string]string, data interface{}) error {
+var certIdRe = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+
+func populateArgs(flags map[string]string, data interface{}, credsService *cloudbuild.CredentialsService) error {
 	v := reflect.Indirect(reflect.ValueOf(data))
 	tt := v.Type()
 	fCount := v.NumField()
 
 	qs := make([]*survey.Question, 0, fCount)
+
+	hasInteractiveCert := false
 
 	for i := 0; i < fCount; i++ {
 		fName := tt.Field(i).Tag.Get("survey")
@@ -48,6 +47,25 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 				promptType = &survey.Password{Message: fName}
 			} else if fType == "filePath" {
 				promptType = &survey.Input{Message: fmt.Sprintf("%s (absoulte path, can drag and drop)", fName)}
+			} else if fType == "certId" {
+				hasInteractiveCert = true
+
+				creds, err := credsService.GetAllIOS()
+				if err != nil {
+					return err // maybe fallback on manual text input instead of error
+				}
+
+				options := make([]string, 0, len(creds))
+
+				for _, cred := range creds {
+					options = append(options, fmt.Sprintf("%s {%s}", cred.Label, cred.Id))
+				}
+
+				promptType = &survey.Select{
+					Message:  fName,
+					Options:  options,
+					PageSize: 10,
+				}
 			} else {
 				promptType = &survey.Input{Message: fName}
 			}
@@ -62,6 +80,18 @@ func PopulateArgs(flags map[string]string, data interface{}) error {
 
 	if err := survey.Ask(qs, data); err != nil {
 		return err
+	}
+
+	if hasInteractiveCert {
+		for i := 0; i < fCount; i++ {
+			fType := tt.Field(i).Tag.Get("type")
+			if fType != "certId" {
+				continue
+			}
+
+			oldValue := v.Field(i).String()
+			v.Field(i).SetString(certIdRe.FindString(oldValue))
+		}
 	}
 
 	return nil
@@ -92,20 +122,24 @@ var Commands = map[string]Command{
 			results := struct {
 				ApiKey string `survey:"apiKey"`
 				OrgId  string `survey:"orgId"`
-				CredId string `survey:"credId"`
+				CredId string `survey:"credId" type:"credId"`
 			}{}
 
-			if err := PopulateArgs(flags, &results); err != nil {
+			config, err := settings.ParseDotFile()
+			if err != nil {
+				return err
+			}
+			credsService := cloudbuild.NewCredentialsService(config.ApiKey, config.OrgId)
+
+			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
 			}
 
-			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
 			cred, err := credsService.GetIOS(results.CredId)
 			if err != nil {
 				return err
 			}
 
-			// fmt.Printf("%+v\n", cred)
 			prettyPrint(cred)
 
 			return nil
@@ -125,7 +159,7 @@ var Commands = map[string]Command{
 				OrgId  string `survey:"orgId"`
 			}{}
 
-			if err := PopulateArgs(flags, &results); err != nil {
+			if err := populateArgs(flags, &results, nil); err != nil {
 				return err
 			}
 
@@ -157,18 +191,23 @@ var Commands = map[string]Command{
 			results := struct {
 				ApiKey      string `survey:"apiKey"`
 				OrgId       string `survey:"orgId"`
-				CertId      string `survey:"certId"`
+				CertId      string `survey:"certId" type:"certId"`
 				Label       string `survey:"label"`
 				CertPath    string `survey:"certPath" type:"filePath"`
 				ProfilePath string `survey:"profilePath" type:"filePath"`
 				CertPass    string `survey:"certPass" type:"password"`
 			}{}
 
-			if err := PopulateArgs(flags, &results); err != nil {
+			config, err := settings.ParseDotFile()
+			if err != nil {
+				return err
+			}
+			credsService := cloudbuild.NewCredentialsService(config.ApiKey, config.OrgId)
+
+			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
 			}
 
-			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
 			cred, err := credsService.UpdateIOS(results.CertId, results.Label, results.CertPath, results.ProfilePath, results.CertPass)
 			if err != nil {
 				return err
@@ -201,11 +240,12 @@ var Commands = map[string]Command{
 				CertPass    string `survey:"certPass" type:"password"`
 			}{}
 
-			if err := PopulateArgs(flags, &results); err != nil {
+			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
+
+			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
 			}
 
-			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
 			cred, err := credsService.UploadIOS(results.Label, results.CertPath, results.ProfilePath, results.CertPass)
 			if err != nil {
 				return err
@@ -229,14 +269,19 @@ var Commands = map[string]Command{
 			results := struct {
 				ApiKey string `survey:"apiKey"`
 				OrgId  string `survey:"orgId"`
-				CertId string `survey:"certId"`
+				CertId string `survey:"certId" type:"certId"`
 			}{}
 
-			if err := PopulateArgs(flags, &results); err != nil {
+			config, err := settings.ParseDotFile()
+			if err != nil {
+				return err
+			}
+			credsService := cloudbuild.NewCredentialsService(config.ApiKey, config.OrgId)
+
+			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
 			}
 
-			credsService := cloudbuild.NewCredentialsService(results.ApiKey, results.OrgId)
 			resp, err := credsService.DeleteIOS(results.CertId)
 			if err != nil {
 				return err
@@ -261,7 +306,7 @@ var Commands = map[string]Command{
 				OrgId  string `survey:"orgId"`
 			}{}
 
-			if err := PopulateArgs(flags, &results); err != nil {
+			if err := populateArgs(flags, &results, nil); err != nil {
 				return err
 			}
 
