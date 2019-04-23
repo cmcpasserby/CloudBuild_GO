@@ -37,7 +37,7 @@ func printHelp() {
 
 usage:
   ucb <command> [flags]
-  Global Flags: --apiKey, --orgId (these are best defined in the config file via 'CloudBuild-Go config')
+  Global Flags: --apiKey, --orgId (these are best defined in the config file via 'ucb config')
 
 commands are:`)
 
