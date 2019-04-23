@@ -122,7 +122,7 @@ var Commands = map[string]Command{
 			results := struct {
 				ApiKey string `survey:"apiKey"`
 				OrgId  string `survey:"orgId"`
-				CredId string `survey:"credId" type:"credId"`
+				CredId string `survey:"credId" type:"certId"`
 			}{}
 
 			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
