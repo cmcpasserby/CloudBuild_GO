@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"flag"
 	"github.com/cmcpasserby/ucb/cmd/cloudbuild/settings"
 )
@@ -30,10 +31,16 @@ func ParseFlags(set *flag.FlagSet, args []string) (map[string]string, error) {
 
 	// apply from dot settings if not defined as flags
 	if _, ok := flagMap["apiKey"]; !ok {
+		if data.ApiKey == "" {
+			return nil, errors.New("no api key provided")
+		}
 		flagMap["apiKey"] = data.ApiKey
 	}
 
 	if _, ok := flagMap["orgId"]; !ok {
+		if data.OrgId == "" {
+			return nil, errors.New("no org id provided")
+		}
 		flagMap["orgId"] = data.OrgId
 	}
 
