@@ -22,6 +22,42 @@ type Command struct {
 
 var certIdRe = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
 
+func populateGlobalArgs(flags map[string]string, data interface{}) error {
+	v := reflect.Indirect(reflect.ValueOf(data))
+	tt := v.Type()
+	fCount := v.NumField()
+
+	qs := make([]*survey.Question, 0, fCount)
+
+	for i := 0; i < fCount; i++ {
+		if isGlobal := tt.Field(i).Tag.Get("global"); isGlobal == "" || isGlobal == "false" {
+			continue
+		}
+
+		fName := tt.Field(i).Tag.Get("survey")
+		if fName == "" {
+			fName = tt.Field(i).Name
+		}
+
+		if val, ok := flags[fName]; ok && val != "" {
+			v.Field(i).SetString(val)
+		} else {
+			qs = append(qs, &survey.Question{
+				Name:     fName,
+				Prompt:   &survey.Input{Message: fName},
+				Validate: survey.Required,
+			})
+		}
+	}
+
+	if len(qs) > 0 {
+		if err := survey.Ask(qs, data); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func populateArgs(flags map[string]string, data interface{}, credsService *cloudbuild.CredentialsService) error {
 	v := reflect.Indirect(reflect.ValueOf(data))
 	tt := v.Type()
@@ -32,10 +68,18 @@ func populateArgs(flags map[string]string, data interface{}, credsService *cloud
 	hasInteractiveCert := false
 
 	for i := 0; i < fCount; i++ {
+		if isGlobal := tt.Field(i).Tag.Get("global"); isGlobal == "true" {
+			continue
+		}
+
 		fName := tt.Field(i).Tag.Get("survey")
 		fType := tt.Field(i).Tag.Get("type")
 		if fName == "" {
 			fName = tt.Field(i).Name
+		}
+
+		if fName == "orgId" || fName == "apiKey" {
+			continue
 		}
 
 		if val, ok := flags[fName]; ok {
@@ -120,13 +164,16 @@ var Commands = map[string]Command{
 		}(),
 		func(flags map[string]string) error {
 			results := struct {
-				ApiKey string `survey:"apiKey"`
-				OrgId  string `survey:"orgId"`
+				ApiKey string `survey:"apiKey" global:"true"`
+				OrgId  string `survey:"orgId" global:"true"`
 				CredId string `survey:"credId" type:"certId"`
 			}{}
 
-			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
+			if err := populateGlobalArgs(flags, &results); err != nil {
+				return err
+			}
 
+			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
 			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
 			}
@@ -151,9 +198,13 @@ var Commands = map[string]Command{
 		func(flags map[string]string) error {
 			// parse args and settings, and question if needed
 			results := struct {
-				ApiKey string `survey:"apiKey"`
-				OrgId  string `survey:"orgId"`
+				ApiKey string `survey:"apiKey" global:"true"`
+				OrgId  string `survey:"orgId" global:"true"`
 			}{}
+
+			if err := populateGlobalArgs(flags, &results); err != nil {
+				return err
+			}
 
 			if err := populateArgs(flags, &results, nil); err != nil {
 				return err
@@ -185,8 +236,8 @@ var Commands = map[string]Command{
 		}(),
 		func(flags map[string]string) error {
 			results := struct {
-				ApiKey      string `survey:"apiKey"`
-				OrgId       string `survey:"orgId"`
+				ApiKey      string `survey:"apiKey" global:"true"`
+				OrgId       string `survey:"orgId" global:"true"`
 				CertId      string `survey:"certId" type:"certId"`
 				Label       string `survey:"label"`
 				CertPath    string `survey:"certPath" type:"filePath"`
@@ -194,8 +245,11 @@ var Commands = map[string]Command{
 				CertPass    string `survey:"certPass" type:"password"`
 			}{}
 
-			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
+			if err := populateGlobalArgs(flags, &results); err != nil {
+				return err
+			}
 
+			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
 			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
 			}
@@ -224,16 +278,19 @@ var Commands = map[string]Command{
 		}(),
 		func(flags map[string]string) error {
 			results := struct {
-				ApiKey      string `survey:"apiKey"`
-				OrgId       string `survey:"orgId"`
+				ApiKey      string `survey:"apiKey" global:"true"`
+				OrgId       string `survey:"orgId" global:"true"`
 				Label       string `survey:"label"`
 				CertPath    string `survey:"certPath" type:"filePath"`
 				ProfilePath string `survey:"profilePath" type:"filePath"`
 				CertPass    string `survey:"certPass" type:"password"`
 			}{}
 
-			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
+			if err := populateGlobalArgs(flags, &results); err != nil {
+				return err
+			}
 
+			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
 			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
 			}
@@ -259,13 +316,16 @@ var Commands = map[string]Command{
 		}(),
 		func(flags map[string]string) error {
 			results := struct {
-				ApiKey string `survey:"apiKey"`
-				OrgId  string `survey:"orgId"`
+				ApiKey string `survey:"apiKey" global:"true"`
+				OrgId  string `survey:"orgId" global:"true"`
 				CertId string `survey:"certId" type:"certId"`
 			}{}
 
-			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
+			if err := populateGlobalArgs(flags, &results); err != nil {
+				return err
+			}
 
+			credsService := cloudbuild.NewCredentialsService(flags["apiKey"], flags["orgId"])
 			if err := populateArgs(flags, &results, credsService); err != nil {
 				return err
 			}
@@ -290,9 +350,13 @@ var Commands = map[string]Command{
 		}(),
 		func(flags map[string]string) error {
 			results := struct {
-				ApiKey string `survey:"apiKey"`
-				OrgId  string `survey:"orgId"`
+				ApiKey string `survey:"apiKey" global:"true"`
+				OrgId  string `survey:"orgId" global:"true"`
 			}{}
+
+			if err := populateGlobalArgs(flags, &results); err != nil {
+				return err
+			}
 
 			if err := populateArgs(flags, &results, nil); err != nil {
 				return err
