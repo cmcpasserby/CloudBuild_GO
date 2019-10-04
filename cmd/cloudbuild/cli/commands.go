@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/cmcpasserby/ucb/cmd/cloudbuild/settings"
@@ -20,7 +21,38 @@ type Command struct {
 	Action   func(flags map[string]string) error
 }
 
-var certIdRe = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+var (
+	apiKeyRe = regexp.MustCompile(`[0-9a-f]{32}`)
+	certIdRe = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+
+	validators = map[string]func(v interface{}) error{
+		"apiKey": func(v interface{}) error {
+			dataErr := errors.New("invalid api key")
+
+			if str, ok := v.(string); ok {
+				if len(str) == 0 || !apiKeyRe.MatchString(str) {
+					return dataErr
+				}
+			} else {
+				return dataErr
+			}
+			return nil
+		},
+
+		"certId": func(v interface{}) error {
+			dataErr := errors.New("invalid cert id")
+
+			if str, ok := v.(string); ok {
+				if len(str) == 0 || !certIdRe.MatchString(str) {
+					return dataErr
+				}
+			} else {
+				return dataErr
+			}
+			return nil
+		},
+	}
+)
 
 func populateGlobalArgs(flags map[string]string, data interface{}) error {
 	v := reflect.Indirect(reflect.ValueOf(data))
@@ -42,10 +74,15 @@ func populateGlobalArgs(flags map[string]string, data interface{}) error {
 		if val, ok := flags[fName]; ok && val != "" {
 			v.Field(i).SetString(val)
 		} else {
+			validator, ok := validators[fName]
+			if !ok {
+				validator = survey.Required
+			}
+
 			qs = append(qs, &survey.Question{
 				Name:     fName,
 				Prompt:   &survey.Input{Message: fName},
-				Validate: survey.Required,
+				Validate: validator,
 			})
 		}
 	}
@@ -114,10 +151,15 @@ func populateArgs(flags map[string]string, data interface{}, credsService *cloud
 				promptType = &survey.Input{Message: fName}
 			}
 
+			validator, ok := validators[fName]
+			if !ok {
+				validator = survey.Required
+			}
+
 			qs = append(qs, &survey.Question{
 				Name:     fName,
 				Prompt:   promptType,
-				Validate: survey.Required,
+				Validate: validator,
 			})
 		}
 	}
@@ -376,7 +418,7 @@ var Commands = map[string]Command{
 		},
 	},
 
-	"config": {
+	"config": { // TODO create flow for creating file via survey
 		"config",
 		"Edit config file",
 		func() *flag.FlagSet {
@@ -394,6 +436,7 @@ var Commands = map[string]Command{
 				}
 			}
 
+			// TODO will need to sort out platforms tools so this works on windows as well as the current mac and linux support
 			cmd := exec.Command("vim", dotFilePath)
 
 			cmd.Stdin = os.Stdin
