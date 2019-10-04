@@ -51,8 +51,24 @@ var (
 			}
 			return nil
 		},
+
+		"certPath":    fileExists,
+		"profilePass": fileExists,
 	}
 )
+
+func fileExists(v interface{}) error {
+	dataErr := errors.New("invalid file")
+
+	if str, ok := v.(string); ok {
+		if _, err := os.Stat(str); err != nil {
+			return dataErr
+		}
+	} else {
+		return dataErr
+	}
+	return nil
+}
 
 func populateGlobalArgs(flags map[string]string, data interface{}) error {
 	v := reflect.Indirect(reflect.ValueOf(data))
